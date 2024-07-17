@@ -1,17 +1,45 @@
-# b0 - Back to Basic
+# Back to Basics
 
-Fight for simplicity: express logic in plain Java and use tools provided by the Java Development Kit.
+Use command-line tools as primitives and express build logic in plain Java.
 
-## b0 - The Good
+## The Good
 
-- For each action there's a dedicated Java program, e.g. `Build!` ➡️ `b0/src/Build.java`
+Quickly get started on any platform.
 
-- Need a new action? Create another Java program! `b0/src/MyAction.java`
-- Composite actions? Reference other Java programs! `b0/src/Rebuild.java`
+### Pure Java Programs
 
-- Java programs can be launched from the console, e.g. `java b0/src/Start.java` (JEP 330, JEP 458)
-- Press Play (on Tape) in IDE(A)s, no extra plugins required
+For each action there's a dedicated Java program.
 
-## b0 - The Ugly
+_Build!_ ➡️ `Build.java`
 
+- Need a new action? Create another Java program! `MyAction.java`
+- Composite actions? Reference other Java programs! `Rebuild.java` = `Clean.main(); Build.main()`
+
+Java programs can be launched from the console via `java Build.java`.
+Press Play ▶️ in IDE(A)s to launch Java programs — no extra plugins required.
+
+### Tools Tools Tools
+
+Call command-line tools to build your Java product.
+
+- Want to rerun a tool call? Copy and paste the call on your shell! `| javac ...`
+- Tune tool call arguments? Modify the hosting Java program! `run("javac", ...)`
+
+The Java Development Kit provides tools to build Java products — no extra tools required.
+Java has the `ToolProvider` SPI to invoke tools without necessarily starting a new VM.
+
+## The Bad
+
+Java Programs
 - Common properties spread over multiple files, e.g. `var out = Path.of("b0", "out");`
+- Primitive tool call representation, e.g. `void run(String name, String[] args) { ... }`
+
+Tools
+- External tools
+- External modules
+
+## The Ugly
+
+With great power (100% Java) comes great responsibility (maintainable code).
+
+Where's the difference between code used in production, code used for testing, and code used to build products?
