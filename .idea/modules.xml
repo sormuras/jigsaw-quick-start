@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/b0/b0.iml" filepath="$PROJECT_DIR$/b0/b0.iml" />
+      <module fileurl="file://$PROJECT_DIR$/b1/b1.iml" filepath="$PROJECT_DIR$/b1/b1.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/com.greetings.iml" filepath="$PROJECT_DIR$/.idea/com.greetings.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/jigsaw-quick-start.iml" filepath="$PROJECT_DIR$/.idea/jigsaw-quick-start.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/org.astro.iml" filepath="$PROJECT_DIR$/.idea/org.astro.iml" />
