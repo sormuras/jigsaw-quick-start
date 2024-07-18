@@ -1,3 +1,3 @@
-# Improved Basics
+# Better Basics
 
-Centralize common properties in `record Project(...) {}` class.
+Centralize common properties and methods in `record Project(...) {}` class.
