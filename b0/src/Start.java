@@ -8,7 +8,7 @@ public class Start {
     if (!Files.isDirectory(out)) {
       Build.main();
     }
-    java("--module-path", out.resolve("modules").toString(), "--module", "com.greetings");
+    java("--module-path=" + out.resolve("modules"), "--module=com.greetings");
   }
 
   private static void java(String... args) {
