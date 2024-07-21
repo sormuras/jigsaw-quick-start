@@ -1,6 +1,6 @@
-# jigsaw-quick-start
+# Jigsaw Quick-Start Revisited
 
-This project uses the example from https://openjdk.org/projects/jigsaw/quick-start to show a Java-only setup:
+This project uses the example from https://openjdk.org/projects/jigsaw/quick-start to show a Java-only build setup:
 all shell commands are transformed into platform-agnostic Java code.
 
 ```text
@@ -47,15 +47,16 @@ java b0/src/Start.java
 
 [Better Basics](b1) or centralize common properties and methods.
 
-Introduce `Project` record as a central place to organize common properties and methods.
+Introduce `Project` record as a central place to organize common properties and all action methods.
 ```java
 record Project(Path out) {
     void start() {
-        if (!Files.isDirectory(out)) {
-            build(); // runs javac and jar to compile and package modules
+        if (!Files.isDirectory(out)) { // Use instance record component `out`
+            build(); // Invoke same-class sibling method `build()`
         }
         java("--module-path=" + out.resolve("modules"), "--module=com.greetings");
     }
+    // Here be more methods: build(), clean(), rebuild(), ...
 }
 ```
 
@@ -68,8 +69,16 @@ public class Start {
 }
 ```
 
+## Extract Model and Actions
 
-- [Extract Model](b2) Extract project model and actions.
+[Extract Model](b2) or let the `Project` record compose desired traits.
+
+Move common project properties into components of a `Model` record — which in turn is composed of nested records like `Folders`.
+
+The `Action` interface defines an accessor to an instance of `Model`.
+It may also host convenient helpers used by derived actions.
+
+Wrap actions with custom code by overriding default methods.
 
 ```java
 public class Start {
@@ -82,20 +91,67 @@ record Project(Model model) implements Builder, Cleaner, Rebuilder, Starter {
   static Project ofCurrentWorkingDirectory() {
     return new Project(Model.of("b2"));
   }
+  @Override
+  public void start() {
+      System.out.println("BEGIN");
+      Starter.super.start();
+      System.out.println("END.");
+  }
 }
 
 public interface Starter extends Action, Builder {
     default void start() {
-        // see above
+        var out = model().folders().out(); // Access nested record components
+        if (!Files.isDirectory(out)) {     // Variable `out` is local again
+            build();                       // Re-use default method in another trait: Builder.build()
+        }
+        java("--module-path=" + out.resolve("modules"), "--module=com.greetings");
     }
 }
 ```
 
-- [Tool Time](b3) Improve tooling support.
-- [Tool's Trifecta](b4) ToolFinder - ToolRunner - ToolCall
+## Define extension points for configuration.
 
-- [External Tools](b5) Install external tools.
-- [External Modules](b6) Import external modules.
+[Extension Points](b3) Introduce extension points for configuration.
 
-- [Extension Points](b7) Introduce extension points for configuration.
+Action interfaces (`Starter`) define a single method as their main purpose (`start()`).
+Wrapping custom code around those action methods is achieved by overriding them.
 
+Action interface may also define functions as overridable extension points to let a project configure the behaviour.
+
+Names of such extension point functions should start with their interface name.
+This naming convention helps to override right extension point and the prevents name clashes with other actions. 
+
+```java
+public interface Starter extends Action, Builder {
+    default void start() {
+        var out = model().folders().out();
+        starterBuildBeforeStart();
+        var module = starterUsesMainModule();
+        java("--module-path=" + out.resolve("modules"), "--module=" + module);
+    }
+    
+    default void starterBuildBeforeStart() {
+        if (Files.isDirectory(model().folders().out())) return;
+        build();
+    }
+    
+    default String starterUsesMainModule() {
+        return "com.greetings";
+    }
+}
+```
+
+
+## Tool Time
+
+- [Tool Time](b4) Improve tooling support.
+
+## Tool's Trifecta
+
+- [Tool's Trifecta](b5) ToolFinder - ToolRunner - ToolCall
+
+## Externals
+
+- [External Tools](b6) Install external tools.
+- [External Modules](b7) Import external modules.
