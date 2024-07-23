@@ -1,6 +1,6 @@
 # Jigsaw Quick-Start Revisited
 
-This project uses the example from https://openjdk.org/projects/jigsaw/quick-start to show a Java-only build setup:
+This project uses the example from the [Project Jigsaw Quick-Start](https://openjdk.org/projects/jigsaw/quick-start) guide to show a 100% Java build setup:
 all shell commands are transformed into platform-agnostic Java code.
 
 ```text
@@ -14,7 +14,7 @@ Greetings world!
 
 ## Back to Basics
 
-[Back to Basics](b0) or use command-line tools as primitives and express logic in Java.
+Use command-line tools as primitives and express logic in Java programs.
 
 Create a Java program for each action:
 ```
@@ -25,7 +25,7 @@ b0/src/
     Start.java
 ```
 
-Implement the action logic, for example, `Start.java` could look like this:
+For example, `Start.java` can be implemented like this:
 ```java
 public class Start {
     public static void main(String... args) {
@@ -43,9 +43,11 @@ Run actions directly from within an IDE or on the shell via the `java` launcher:
 java b0/src/Start.java
 ```
 
+This is possible due to "[JEP 330](https://openjdk.org/jeps/330): Launch Single-File Source-Code Programs" introduced in Java 11.
+
 ## Better Basics
 
-[Better Basics](b1) or centralize common properties and methods.
+With the help of "[JEP 458](https://openjdk.org/jeps/458): Launch Multi-File Source-Code Programs" it is possible to centralize common properties and methods.
 
 Introduce `Project` record as a central place to organize common properties and all action methods.
 ```java
@@ -69,29 +71,22 @@ public class Start {
 }
 ```
 
-With "JEP 477: Implicitly Declared Classes and Instance Main Methods" those entry-point programs like `Start.java` can be reduced to:
+With "[JEP 477](https://openjdk.org/jeps/477): Implicitly Declared Classes and Instance Main Methods" those entry-point programs like `Start.java` can be reduced to:
 ```java
 main() { Project.ofCurrentWorkingDirectory().start(); }
 ```
 
 ## Extract Model and Actions
 
-[Extract Model](b2) or let the `Project` record compose desired traits.
+Let the `Project` record compose desired traits.
 
 Move common project properties into components of a `Model` record — which in turn is composed of nested records like `Folders`.
 
 The `Action` interface defines an accessor to an instance of `Model`.
-It may also host convenient helpers used by derived actions.
 
 Wrap actions with custom code by overriding default methods.
 
 ```java
-public class Start {
-    public static void main(String... args) {
-        Project.ofCurrentWorkingDirectory().start();
-    }
-}
-
 record Project(Model model) implements Builder, Cleaner, Rebuilder, Starter {
   static Project ofCurrentWorkingDirectory() {
     return new Project(Model.of("b2"));
@@ -108,7 +103,7 @@ public interface Starter extends Action, Builder {
     default void start() {
         var out = model().folders().out(); // Access nested record components
         if (!Files.isDirectory(out)) {     // Variable `out` is local again
-            build();                       // Re-use default method in another trait: Builder.build()
+            build();                       // Re-use method from another trait: Builder.build()
         }
         java("--module-path=" + out.resolve("modules"), "--module=com.greetings");
     }
