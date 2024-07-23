@@ -69,6 +69,11 @@ public class Start {
 }
 ```
 
+With "JEP 477: Implicitly Declared Classes and Instance Main Methods" those entry-point programs like `Start.java` can be reduced to:
+```java
+main() { Project.ofCurrentWorkingDirectory().start(); }
+```
+
 ## Extract Model and Actions
 
 [Extract Model](b2) or let the `Project` record compose desired traits.
