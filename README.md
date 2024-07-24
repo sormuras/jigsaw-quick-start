@@ -87,16 +87,17 @@ The `Action` interface defines an accessor to an instance of `Model`.
 Wrap actions with custom code by overriding default methods.
 
 ```java
-record Project(Model model) implements Builder, Cleaner, Rebuilder, Starter {
+record Project(Model model) implements Builder, Cleaner, Starter {
   static Project ofCurrentWorkingDirectory() {
     return new Project(Model.of("b2"));
   }
-  @Override
-  public void start() {
-      System.out.println("BEGIN");
+    @Override
+    public void start() {
+      if (!Files.isDirectory(model.folders().out())) {
+          build(); // Builder.this.build();
+      }
       Starter.super.start();
-      System.out.println("END.");
-  }
+    }
 }
 
 public interface Starter extends Action, Builder {

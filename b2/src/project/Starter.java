@@ -1,15 +1,11 @@
 package project;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-public interface Starter extends Action, Builder {
+public interface Starter extends Action {
   default void start() {
     var out = model().folders().out();
-    if (!Files.isDirectory(out)) {
-      build();
-    }
     java("--module-path", out.resolve("modules").toString(), "--module", "com.greetings");
   }
 
