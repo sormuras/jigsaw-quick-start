@@ -1,5 +1,7 @@
 public class Rebuild {
   public static void main(String... args) {
-    Project.ofCurrentWorkingDirectory().rebuild();
+    var project = Project.ofCurrentWorkingDirectory();
+    project.clean();
+    project.build();
   }
 }

@@ -7,18 +7,12 @@ record Project(Model model) implements Builder, Cleaner, Starter {
     return new Project(Model.of("b2"));
   }
 
-  void rebuild() {
-    clean();
-    build();
-  }
-
   @Override
   public void start() {
-    System.out.println("BEGIN");
-    if (!Files.isDirectory(model.folders().out())) {
+    var out = model.folders().out();
+    if (!Files.isDirectory(out)) {
       build();
     }
-    Starter.super.start();
-    System.out.println("END.");
+    Starter.super.start(); // run("java", "--module-path", out.resolve("modules") ...
   }
 }

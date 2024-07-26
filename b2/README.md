@@ -5,7 +5,7 @@ Extract data model and default actions from `record Project(...) {}` class into 
 ```java
 import project.*;
 
-record Project(Model model) implements Builder, Cleaner, Rebuilder, Starter {
+record Project(Model model) implements Builder, Cleaner, Starter {
   static Project ofCurrentWorkingDirectory() {
     return new Project(Model.of("b2"));
   }
