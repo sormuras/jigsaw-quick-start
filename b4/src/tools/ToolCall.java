@@ -51,14 +51,14 @@ public record ToolCall(Carrier tool, List<String> arguments) {
     }
 
     public void run() {
-        var name = switch (tool) {
-          case Carrier.Direct direct -> direct.tool().identifier().name();
-          case Carrier.Lookup lookup -> lookup.name();
+        var tool = switch (this.tool) {
+          case Carrier.Direct direct -> direct.tool();
+          case Carrier.Lookup lookup -> Tool.of(lookup.name());
         };
+        var name = tool.identifier().name();
         var args = arguments.toArray(String[]::new);
 
         System.out.println("| " + name + " " + String.join(" ", args));
-        var tool = Tool.of(name);
         var code = tool.provider().run(System.out, System.err, args);
         if (code == 0) return;
         throw new RuntimeException(name + " returned non-zero exit code: " + code);
