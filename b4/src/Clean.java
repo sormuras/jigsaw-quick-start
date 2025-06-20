@@ -1,5 +1,3 @@
-public class Clean {
-  public static void main(String... args) {
+void main() {
     Project.ofCurrentWorkingDirectory().clean();
-  }
 }

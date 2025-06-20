@@ -1,5 +1,3 @@
-public class Build {
-  public static void main(String... args) {
+void main() {
     Project.ofCurrentWorkingDirectory().build();
-  }
 }
