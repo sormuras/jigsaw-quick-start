@@ -1,13 +1,11 @@
 package project;
 
-import tools.ToolCall;
-
 public interface Starter extends Action {
   default void start() {
-    var out = model().folders().out();
-    ToolCall.of("java")
-            .add("--module-path", out.resolve("modules"))
-            .add("--module", "com.greetings")
-            .run();
+    Tool.of("java")
+        .command()
+        .add("--module-path", model().folders().out().resolve("modules"))
+        .add("--module", "com.greetings")
+        .run();
   }
 }
