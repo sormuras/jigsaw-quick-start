@@ -3,7 +3,7 @@ package project;
 import java.util.List;
 import java.util.stream.Stream;
 
-interface Arguments {
+public interface Arguments {
   List<String> arguments();
 
   default void add(Object argument) {
