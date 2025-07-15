@@ -15,8 +15,8 @@ public interface Action {
       if (code == 0) return;
       throw new RuntimeException(name + " returned non-zero exit code: " + code);
     }
-    var builder =
-        new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", name).toString());
+    var program = Path.of(System.getProperty("java.home"), "bin", name);
+    var builder = new ProcessBuilder(program.toString());
     try {
       builder.command().addAll(List.of(args));
       var process = builder.inheritIO().start();

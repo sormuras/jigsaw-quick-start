@@ -13,8 +13,8 @@ public class Start {
 
   private static void java(String... args) {
     System.out.println("| java " + String.join(" ", args));
-    var executable = Path.of(System.getProperty("java.home"), "bin", "java");
-    var builder = new ProcessBuilder(executable.toString());
+    var program = Path.of(System.getProperty("java.home"), "bin", "java");
+    var builder = new ProcessBuilder(program.toString());
     try {
       builder.command().addAll(List.of(args));
       var process = builder.inheritIO().start();
