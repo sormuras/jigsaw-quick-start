@@ -13,15 +13,16 @@ The `Project.java` file is the single point of interest in Java source form.
 Share common properties used in multiple methods as record components.
 ```java
 record Project(Path out) {
-    // Component out can be access in all methods declared in Project
+    // Component out can be accessed in all methods declared in Project
 }
 ```
 
 ### Top Level Actions
 
-Top-level Java programs are still representing the main actions.
+Top-level Java programs still represent build-related actions.
 
-With "Implicitly Declared Classes and Instance Main Methods" those entry-points will be almost one-liners soon.
+Grace to "[JEP 512](https://openjdk.org/jeps/512): Compact Source Files and Instance Main Methods" those entry-points are one-liners.
+For example, `Build.java`:
 
 ```java
 void main() { Project.ofCurrentWorkingDirectory().build(); }

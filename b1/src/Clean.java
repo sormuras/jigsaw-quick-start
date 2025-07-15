@@ -1,3 +1,1 @@
-void main() {
-    Project.ofCurrentWorkingDirectory().clean();
-}
+void main() { Project.ofCurrentWorkingDirectory().clean(); }

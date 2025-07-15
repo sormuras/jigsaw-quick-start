@@ -1,3 +1,1 @@
-void main() {
-    Project.ofCurrentWorkingDirectory().start();
-}
+void main() { Project.ofCurrentWorkingDirectory().start(); }

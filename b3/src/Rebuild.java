@@ -1,5 +1,5 @@
 void main() {
-    var project = Project.ofCurrentWorkingDirectory();
-    project.clean();
-    project.build();
+  var project = Project.ofCurrentWorkingDirectory();
+  project.clean();
+  project.build();
 }
