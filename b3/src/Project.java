@@ -1,5 +1,4 @@
 import java.nio.file.Files;
-import java.util.List;
 import project.Builder;
 import project.Cleaner;
 import project.Model;
@@ -11,12 +10,12 @@ record Project(Model model) implements Builder, Cleaner, Starter {
   }
 
   @Override
-  public List<String> builderUsesAdditionalJarArgumentsForModuleNamed(String name) {
-    return switch (name) {
-      case "com.greetings" -> List.of("--main-class", "com.greetings.Main");
-      case "org.astro" -> List.of("--module-version=1.0");
-      default -> List.of();
-    };
+  public void buildArchiveWithFile(Jar jar) {
+    Builder.super.buildArchiveWithFile(jar); // --file filename.jar
+    switch (jar.module()) {
+      case "com.greetings" -> jar.add("--main-class", "com.greetings.Main");
+      case "org.astro" -> jar.add("--module-version", "1.0");
+    }
   }
 
   @Override
