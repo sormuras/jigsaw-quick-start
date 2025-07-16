@@ -1,31 +1,79 @@
 package project;
 
-import java.util.List;
-import project.Tool.Command;
+import java.util.ArrayList;
 
 public interface Builder extends Action {
-  default void build() {
-    var out = model().folders().out();
-    // compile source files into class files
-    var compileCommands =
-        List.of(
-            Command.of("javac")
-                .add("-d", out.resolve("classes"))
-                .add("--module-source-path", "src")
-                .add("--module", "org.astro,com.greetings"));
-    // compile class files into archive files
-    var archiveCommands =
-        List.of(
-            Command.of("jar", "--create")
-                .add("--file", out.resolve("modules", "com.greetings.jar"))
-                .add("--main-class", "com.greetings.Main")
-                .add("-C", out.resolve("classes", "com.greetings"), "."),
-            Command.of("jar", "--create")
-                .add("--file", out.resolve("modules", "org.astro.jar"))
-                .add("-C", out.resolve("classes", "org.astro"), "."));
+  record Javac(ArrayList<String> arguments) implements Arguments<Javac> {}
 
-    var runner = Tool.Runner.ofSystem();
-    compileCommands.forEach(runner::run);
-    archiveCommands.parallelStream().forEach(runner::run);
+  record Jar(ArrayList<String> arguments, String module) implements Arguments<Jar> {}
+
+  default void build() {
+    buildClasses();
+    buildArchives();
+  }
+
+  default void buildClasses() {
+    var javac = new Javac(new ArrayList<>());
+    buildClassesWithDestinationDirectory(javac);
+    buildClassesWithModuleSourcePath(javac);
+    buildClassesWithModule(javac);
+    run("javac", javac.arguments());
+  }
+
+  default void buildArchives() {
+    var commands = new ArrayList<Jar>();
+    for (var name : model().modules().names()) {
+      var jar = new Jar(new ArrayList<>(), name);
+      buildArchiveWithCreateMode(jar);
+      buildArchiveWithFile(jar);
+      buildArchiveWithContent(jar);
+      commands.add(jar);
+    }
+    commands.stream().parallel().forEach(jar -> run("jar", jar.arguments()));
+  }
+
+  /// Compiles those source files in the named modules that are newer than the corresponding files
+  /// in the output directory.
+  ///
+  /// `--module module-name (,module-name)*`
+  default void buildClassesWithModule(Javac javac) {
+    javac.add("--module", String.join(",", model().modules().names()));
+  }
+
+  /// Sets the destination directory (or class output directory) for class files.
+  ///
+  /// `-d directory`
+  default void buildClassesWithDestinationDirectory(Javac javac) {
+    javac.add("-d", model().folders().out().resolve("classes"));
+  }
+
+  /// Specifies where to find source files when compiling code in multiple modules.
+  ///
+  /// `--module-source-path module-source-path`
+  default void buildClassesWithModuleSourcePath(Javac javac) {
+    javac.add("--module-source-path", "src");
+  }
+
+  /// Creates the archive.
+  ///
+  /// `--create`
+  default void buildArchiveWithCreateMode(Jar jar) {
+    jar.add("--create");
+  }
+
+  /// Specifies the archive file name.
+  ///
+  /// `--file=FILE`
+  default void buildArchiveWithFile(Jar jar) {
+    var archive = model().folders().out().resolve("modules", jar.module() + ".jar");
+    jar.add("--file", archive);
+  }
+
+  /// Changes into the specified directory and includes the files at the end of the command line.
+  ///
+  /// `-C directory files`
+  default void buildArchiveWithContent(Jar jar) {
+    var classes = model().folders().out().resolve("classes", jar.module());
+    jar.add("-C", classes, ".");
   }
 }
