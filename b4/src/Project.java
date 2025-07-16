@@ -1,6 +1,7 @@
 import java.nio.file.Files;
 import project.Builder;
 import project.Cleaner;
+import project.Command;
 import project.Model;
 import project.Starter;
 
@@ -13,11 +14,10 @@ record Project(Model model) implements Builder, Cleaner, Starter {
   public void build() {
     Builder.super.build();
     try {
-      run(
-          "native-image",
-          args ->
-              args.add("--module-path", model.folders().out().resolve("modules"))
-                  .add("--module", "com.greetings"));
+      Command.line("native-image")
+          .add("--module-path", model.folders().out().resolve("modules"))
+          .add("--module", "com.greetings")
+          .run();
     } catch (RuntimeException exception) {
       System.err.println(exception.getMessage());
       System.err.println(exception.getCause().getMessage());

@@ -1,11 +1,20 @@
 package project;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public interface Builder extends Action {
-  record Javac(ArrayList<String> arguments) implements Arguments {}
+  record Javac(String name, List<String> arguments) implements Command.Context<Javac> {
+    private Javac() {
+      this("javac", new ArrayList<>());
+    }
+  }
 
-  record Jar(ArrayList<String> arguments, String module) implements Arguments {}
+  record Jar(String name, List<String> arguments, String module) implements Command.Context<Jar> {
+    private Jar(String module) {
+      this("jar", new ArrayList<>(), module);
+    }
+  }
 
   default void build() {
     buildClasses();
@@ -13,23 +22,23 @@ public interface Builder extends Action {
   }
 
   default void buildClasses() {
-    var javac = new Javac(new ArrayList<>());
+    var javac = new Javac();
     buildClassesWithDestinationDirectory(javac);
     buildClassesWithModuleSourcePath(javac);
     buildClassesWithModule(javac);
-    run("javac", javac.arguments().toArray(String[]::new));
+    javac.run();
   }
 
   default void buildArchives() {
     var commands = new ArrayList<Jar>();
     for (var name : model().modules().names()) {
-      var jar = new Jar(new ArrayList<>(), name);
+      var jar = new Jar(name);
       buildArchiveWithCreateMode(jar);
       buildArchiveWithFile(jar);
       buildArchiveWithContent(jar);
       commands.add(jar);
     }
-    commands.stream().parallel().forEach(jar -> run("jar", jar.arguments().toArray(String[]::new)));
+    commands.stream().parallel().forEach(Jar::run);
   }
 
   /// Compiles those source files in the named modules that are newer than the corresponding files

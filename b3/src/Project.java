@@ -24,6 +24,6 @@ record Project(Model model) implements Builder, Cleaner, Starter {
     if (!Files.isDirectory(out)) {
       build();
     }
-    Starter.super.start(); // run("java", "--module-path", out.resolve("modules") ...
+    Starter.super.start();
   }
 }
