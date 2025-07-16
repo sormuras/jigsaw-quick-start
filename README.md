@@ -33,7 +33,7 @@ public class Start {
     public static void main(String... args) {
         var out = Path.of("b0", "out");
         if (!Files.isDirectory(out)) {
-            Build.main(); // runs javac and jar to compile and package modules
+            run("java", Path.of("b0", "src", "Build.java").toString());
         }
         run("java", "--module-path=" + out.resolve("modules"), "--module=com.greetings");
     }
@@ -48,6 +48,8 @@ java b0/src/Start.java
 
 This is possible due to "[JEP 330](https://openjdk.org/jeps/330): Launch Single-File Source-Code
 Programs" introduced in Java 11.
+
+Note that the `java` launcher is used as a tool to trigger other actions.
 
 ## Better Basics
 
