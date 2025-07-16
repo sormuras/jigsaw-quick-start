@@ -1,9 +1,10 @@
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.spi.ToolProvider;
 
 public class Build {
-  public static void main(String... args) {
+  public static void main(String... args) throws Exception {
     var out = Path.of("b0", "out");
     // compile source files into class files
     run(
@@ -15,27 +16,28 @@ public class Build {
         "--module",
         "org.astro,com.greetings");
     // compile class files into archive files
+    Files.createDirectories(out.resolve("modules"));
     run(
         "jar",
         "--create",
         "--file",
-        out.resolve("modules", "com.greetings.jar").toString(),
+        out.resolve("modules").resolve("com.greetings.jar").toString(),
         "--main-class",
         "com.greetings.Main",
         "-C",
-        out.resolve("classes", "com.greetings").toString(),
+        out.resolve("classes").resolve("com.greetings").toString(),
         ".");
     run(
         "jar",
         "--create",
         "--file",
-        out.resolve("modules", "org.astro.jar").toString(),
+        out.resolve("modules").resolve("org.astro.jar").toString(),
         "-C",
-        out.resolve("classes", "org.astro").toString(),
+        out.resolve("classes").resolve("org.astro").toString(),
         ".");
   }
 
-  static void run(String name, String... args) {
+  public static void run(String name, String... args) {
     System.out.println("| " + name + " " + String.join(" ", args));
     var tool = ToolProvider.findFirst(name);
     if (tool.isPresent()) {
