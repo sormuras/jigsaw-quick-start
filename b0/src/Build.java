@@ -35,7 +35,7 @@ public class Build {
         ".");
   }
 
-  private static void run(String name, String... args) {
+  static void run(String name, String... args) {
     System.out.println("| " + name + " " + String.join(" ", args));
     var tool = ToolProvider.findFirst(name);
     if (tool.isPresent()) {
