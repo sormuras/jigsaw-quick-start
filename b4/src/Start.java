@@ -1,1 +1,1 @@
-void main() { Project.ofCurrentWorkingDirectory().start(); }
+void main(String... args) { Project.ofCurrentWorkingDirectory().start(args); }

@@ -34,11 +34,10 @@ record Project(Model model) implements Builder, Cleaner, Starter {
   }
 
   @Override
-  public void start() {
-    var out = model.folders().out();
-    if (!Files.isDirectory(out)) {
+  public void start(String... args) {
+    if (!Files.isDirectory(model.folders().out())) {
       build();
     }
-    Starter.super.start();
+    Starter.super.start(args);
   }
 }

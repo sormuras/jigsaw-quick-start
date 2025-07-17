@@ -30,15 +30,15 @@ public interface Builder extends Action {
   }
 
   default void buildArchives() {
-    var commands = new ArrayList<Jar>();
+    var jars = new ArrayList<Jar>();
     for (var name : model().modules().names()) {
       var jar = new Jar(name);
       buildArchiveWithCreateMode(jar);
       buildArchiveWithFile(jar);
       buildArchiveWithContent(jar);
-      commands.add(jar);
+      jars.add(jar);
     }
-    commands.stream().parallel().forEach(Jar::run);
+    jars.stream().parallel().forEach(Command::run);
   }
 
   /// Compiles those source files in the named modules that are newer than the corresponding files
