@@ -3,33 +3,25 @@ package project;
 public interface Builder extends Action {
   default void build() {
     var out = model().folders().out();
-    // compile source files into class files
-    run(
-        "javac",
-        "-d",
-        out.resolve("classes").toString(),
-        "--module-source-path",
-        "src",
-        "--module",
-        "org.astro,com.greetings");
-    // compile class files into archive files
-    run(
-        "jar",
-        "--create",
-        "--file",
-        out.resolve("modules", "com.greetings.jar").toString(),
-        "--main-class",
-        "com.greetings.Main",
-        "-C",
-        out.resolve("classes", "com.greetings").toString(),
-        ".");
-    run(
-        "jar",
-        "--create",
-        "--file",
-        out.resolve("modules", "org.astro.jar").toString(),
-        "-C",
-        out.resolve("classes", "org.astro").toString(),
-        ".");
+    var classes = out.resolve("classes");
+    var modules = out.resolve("modules");
+
+    Command.line("javac")
+        .add("-d", classes)
+        .add("--module-source-path", "src")
+        .add("--module", "org.astro,com.greetings")
+        .run();
+
+    Command.line("jar")
+        .add("--create")
+        .add("--file", modules.resolve("com.greetings.jar"))
+        .add("--main-class", "com.greetings.Main")
+        .add("-C", classes.resolve("com.greetings"), ".")
+        .run();
+    Command.line("jar")
+        .add("--create")
+        .add("--file", modules.resolve("org.astro.jar"))
+        .add("-C", classes.resolve("org.astro"), ".")
+        .run();
   }
 }

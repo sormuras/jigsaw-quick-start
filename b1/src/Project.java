@@ -1,4 +1,7 @@
-import module java.base;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 record Project(Path out) {
   static Project ofCurrentWorkingDirectory() {
@@ -6,45 +9,41 @@ record Project(Path out) {
   }
 
   void build() {
-    // compile source files into class files
-    run(
-        "javac",
-        "-d",
-        out.resolve("classes").toString(),
-        "--module-source-path",
-        "src",
-        "--module",
-        "org.astro,com.greetings");
-    // compile class files into archive files
-    run(
-        "jar",
-        "--create",
-        "--file",
-        out.resolve("modules", "com.greetings.jar").toString(),
-        "--main-class",
-        "com.greetings.Main",
-        "-C",
-        out.resolve("classes", "com.greetings").toString(),
-        ".");
-    run(
-        "jar",
-        "--create",
-        "--file",
-        out.resolve("modules", "org.astro.jar").toString(),
-        "-C",
-        out.resolve("classes", "org.astro").toString(),
-        ".");
+    var classes = out.resolve("classes");
+    var modules = out.resolve("modules");
+
+    Command.line("javac")
+        .add("-d", classes)
+        .add("--module-source-path", "src")
+        .add("--module", "org.astro,com.greetings")
+        .run();
+
+    Command.line("jar")
+        .add("--create")
+        .add("--file", modules.resolve("com.greetings.jar"))
+        .add("--main-class", "com.greetings.Main")
+        .add("-C", classes.resolve("com.greetings"), ".")
+        .run();
+    Command.line("jar")
+        .add("--create")
+        .add("--file", modules.resolve("org.astro.jar"))
+        .add("-C", classes.resolve("org.astro"), ".")
+        .run();
   }
 
   void clean() {
     delete(out);
   }
 
-  void start() {
+  void start(String... args) {
     if (!Files.isDirectory(out)) {
       build();
     }
-    run("java", "--module-path", out.resolve("modules").toString(), "--module", "com.greetings");
+    Command.line("java")
+        .add("--module-path", out.resolve("modules"))
+        .add("--module", "com.greetings")
+        .addAll(args)
+        .run();
   }
 
   private static void delete(Path path) {
@@ -56,27 +55,6 @@ record Project(Path out) {
       for (var file : files.toArray(Path[]::new)) Files.deleteIfExists(file);
     } catch (IOException exception) {
       throw new UncheckedIOException(exception);
-    }
-  }
-
-  private static void run(String name, String... args) {
-    System.out.println("| " + name + " " + String.join(" ", args));
-    var tool = ToolProvider.findFirst(name);
-    if (tool.isPresent()) {
-      var code = tool.get().run(System.out, System.err, args);
-      if (code == 0) return;
-      throw new RuntimeException(name + " returned non-zero exit code: " + code);
-    }
-    var program = Path.of(System.getProperty("java.home"), "bin", name);
-    var builder = new ProcessBuilder(program.toString());
-    try {
-      builder.command().addAll(List.of(args));
-      var process = builder.inheritIO().start();
-      var code = process.waitFor();
-      if (code == 0) return;
-      throw new RuntimeException(name + " returned non-zero exit code: " + code);
-    } catch (Exception exception) {
-      throw new RuntimeException(name + " failed.", exception);
     }
   }
 }

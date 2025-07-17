@@ -99,6 +99,8 @@ nested records like `Folders`.
 The `Action` interface defines an accessor to an instance of `Model`.
 
 Wrap actions with custom code by overriding default methods.
+Wrapping custom code around those action methods is achieved by overriding them,
+rendering explicit and empty `startBefore()` and `startAfter()` methods redundant.
 
 ```java
 record Project(Model model) implements Builder, Cleaner, Starter {
@@ -108,30 +110,22 @@ record Project(Model model) implements Builder, Cleaner, Starter {
 
     @Override
     public void start() {
+        // <-- before start
         if (!Files.isDirectory(model.folders().out())) {
             build(); // Builder.this.build();
         }
         Starter.super.start();
-    }
-}
-
-public interface Starter extends Action, Builder {
-    default void start() {
-        var out = model().folders().out(); // Access nested record components
-        if (!Files.isDirectory(out)) {     // Variable `out` is local again
-            build();                       // Re-use method from another trait: Builder.build()
-        }
-        run("java", "--module-path=" + out.resolve("modules"), "--module=com.greetings");
+        // --> after start
     }
 }
 ```
 
 ## Define extension points for configuration.
 
-[Extension Points](b3) Introduce extension points for configuration.
+[Extension Points](b3) Introduce command-line abstractions and extension points for configuration.
 
 Action interfaces (`Starter`) define a single method as their main purpose (`start()`).
-Wrapping custom code around those action methods is achieved by overriding them.
+
 
 Action interface may also define functions as overridable extension points to let a project
 configure the behaviour.
@@ -142,21 +136,6 @@ other actions.
 
 ```java
 public interface Starter extends Action, Builder {
-    default void start() {
-        var out = model().folders().out();
-        starterBuildBeforeStart();
-        var module = starterUsesMainModule();
-        java("--module-path=" + out.resolve("modules"), "--module=" + module);
-    }
-
-    default void starterBuildBeforeStart() {
-        if (Files.isDirectory(model().folders().out())) return;
-        build();
-    }
-
-    default String starterUsesMainModule() {
-        return "com.greetings";
-    }
 }
 ```
 

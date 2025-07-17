@@ -1,60 +1,83 @@
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.spi.ToolProvider;
 
 public class Build {
   public static void main(String... args) throws Exception {
     var out = Path.of("b0", "out");
-    // compile source files into class files
-    run(
-        "javac",
-        "-d",
-        out.resolve("classes").toString(),
-        "--module-source-path",
-        "src",
-        "--module",
-        "org.astro,com.greetings");
-    // compile class files into archive files
-    Files.createDirectories(out.resolve("modules"));
-    run(
-        "jar",
-        "--create",
-        "--file",
-        out.resolve("modules").resolve("com.greetings.jar").toString(),
-        "--main-class",
-        "com.greetings.Main",
-        "-C",
-        out.resolve("classes").resolve("com.greetings").toString(),
-        ".");
-    run(
-        "jar",
-        "--create",
-        "--file",
-        out.resolve("modules").resolve("org.astro.jar").toString(),
-        "-C",
-        out.resolve("classes").resolve("org.astro").toString(),
-        ".");
+    var classes = out.resolve("classes");
+    var modules = out.resolve("modules");
+
+    Command.line("javac")
+        .add("-d", classes)
+        .add("--module-source-path", "src")
+        .add("--module", "org.astro,com.greetings")
+        .run();
+
+    Files.createDirectories(modules);
+    Command.line("jar")
+        .add("--create")
+        .add("--file", modules.resolve("com.greetings.jar"))
+        .add("--main-class", "com.greetings.Main")
+        .add("-C", classes.resolve("com.greetings"), ".")
+        .run();
+    Command.line("jar")
+        .add("--create")
+        .add("--file", modules.resolve("org.astro.jar"))
+        .add("-C", classes.resolve("org.astro"), ".")
+        .run();
   }
 
-  public static void run(String name, String... args) {
-    System.out.println("| " + name + " " + String.join(" ", args));
-    var tool = ToolProvider.findFirst(name);
-    if (tool.isPresent()) {
-      var code = tool.get().run(System.out, System.err, args);
-      if (code == 0) return;
-      throw new RuntimeException(name + " returned non-zero exit code: " + code);
+  public static final class Command implements Runnable {
+    public static Command line(String name) {
+      return new Command(name, new ArrayList<>());
     }
-    var program = Path.of(System.getProperty("java.home"), "bin", name);
-    var builder = new ProcessBuilder(program.toString());
-    try {
-      builder.command().addAll(List.of(args));
-      var process = builder.inheritIO().start();
-      var code = process.waitFor();
-      if (code == 0) return;
-      throw new RuntimeException(name + " returned non-zero exit code: " + code);
-    } catch (Exception exception) {
-      throw new RuntimeException(name + " failed.", exception);
+
+    private final String name;
+    private final List<String> arguments;
+
+    Command(String name, List<String> arguments) {
+      this.name = name;
+      this.arguments = arguments;
+    }
+
+    Command add(Object argument) {
+      arguments.add(argument.toString());
+      return this;
+    }
+
+    Command add(String key, Object value, Object... more) {
+      add(key).add(value);
+      if (more.length == 0) return this;
+      if (more.length == 1) return add(more[0]);
+      if (more.length == 2) return add(more[0]).add(more[1]);
+      for (var next : more) add(next);
+      return this;
+    }
+
+    @Override
+    public void run() {
+      System.out.println("| " + name + " " + String.join(" ", arguments));
+      var tool = ToolProvider.findFirst(name);
+      if (tool.isPresent()) {
+        var args = arguments.toArray(String[]::new);
+        var code = tool.get().run(System.out, System.err, args);
+        if (code == 0) return;
+        throw new RuntimeException(name + " returned non-zero exit code: " + code);
+      }
+      var program = Path.of(System.getProperty("java.home"), "bin", name);
+      var builder = new ProcessBuilder(program.toString());
+      try {
+        builder.command().addAll(arguments);
+        var process = builder.inheritIO().start();
+        var code = process.waitFor();
+        if (code == 0) return;
+        throw new RuntimeException(name + " returned non-zero exit code: " + code);
+      } catch (Exception exception) {
+        throw new RuntimeException(name + " failed.", exception);
+      }
     }
   }
 }
